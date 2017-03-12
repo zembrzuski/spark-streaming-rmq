@@ -11,18 +11,36 @@ object HelloStreaming {
     val conf = new SparkConf().setAppName("streaming").setMaster("local[*]")
     val sc = new SparkContext(conf)
     val ssc = new StreamingContext(sc, Seconds(5))
+    ssc.checkpoint(".")
 
-    val queue = "spark-hello"
-    val exchangeName = Option.apply("spark-hello")
+    val queue = "xoxo"
+    val exchangeName = Option.apply("")
     val exchangeType = Option.apply("direct")
-    val routingKey = Option.apply("spark-hello")
+    val routingKey = Option.apply("xoxo")
     val exchangeAndRouting = ExchangeAndRouting(exchangeName, exchangeType, routingKey)
+
     val connectionParams = Map("TODO" -> "DO-IT")
+
     val rmqDistributedKey = RabbitMQDistributedKey(queue, exchangeAndRouting, connectionParams)
     val distributedKeys = Seq(rmqDistributedKey)
-    val rabbitMQParams = Map.empty[String, String]
+
+    val rabbitMQParams: Map[String, String] = Map(
+      "hosts" -> "ERRADO",
+      "queueName" -> queue,
+      "exchangeName" -> "",
+      "exchangeType" -> "direct",
+      "routingKeys" -> "xoxo",
+      "durable" -> "false"
+    )
 
     val receiverStream = RabbitMQUtils.createDistributedStream[String](ssc, distributedKeys, rabbitMQParams)
+    receiverStream.print()
+    receiverStream.start()
+    receiverStream.stop()
+
+
+
+//    receiverStream.start()
 
     //    basic example.
 //   ----------------
