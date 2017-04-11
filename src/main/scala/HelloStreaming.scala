@@ -35,15 +35,16 @@ object HelloStreaming {
     )
 
     //stream.count().print()
-    val value = stream.map(record => record.value())
-    value.map(v => v.toUpperCase()).print()
-
+    val value = stream.map(record => (record.value(), 1L))
+    val updated = value.updateStateByKey(updateRunningSum _)
+    updated.print()
 
     ssc.start()
     ssc.awaitTermination()
+  }
 
-
-
+  def updateRunningSum(values: Seq[Long], state: Option[Long]) = {
+    Some(state.getOrElse(0L) + values.size)
   }
 
 }
