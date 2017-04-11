@@ -5,18 +5,8 @@ scalaVersion := "2.10.4"
 libraryDependencies += "org.apache.spark" % "spark-core_2.10" % "2.1.0"
 libraryDependencies += "org.apache.spark" % "spark-streaming_2.10" % "2.1.0"
 
-// https://mvnrepository.com/artifact/com.stratio.receiver/spark-rabbitmq
-libraryDependencies += "com.stratio.receiver" % "spark-rabbitmq" % "0.5.1"
-
-
-//libraryDependencies += "org.apache.spark" % "spark-sql_2.10" % "2.1.0"
-//libraryDependencies += "org.mongodb.spark" % "mongo-spark-connector_2.10" % "0.1"
-//libraryDependencies += "org.mongodb.spark" % "mongo-spark-connector_2.11" % "1.1.0"
-// https://mvnrepository.com/artifact/org.apache.spark/spark-streaming_2.10
-// https://mvnrepository.com/artifact/org.apache.spark/spark-sql_2.10
-
 // estou usando esse cara para fazer parse de json
-//libraryDependencies += "com.typesafe.play" % "play-json_2.10" % "2.4.8"
+libraryDependencies += "com.typesafe.play" % "play-json_2.10" % "2.4.8"
 
-// https://mvnrepository.com/artifact/org.apache.spark/spark-sql_2.10
-//libraryDependencies += "org.apache.spark" % "spark-sql_2.10" % "1.0.0"
+libraryDependencies += "org.apache.spark" % "spark-streaming-kafka-0-10_2.10" % "2.0.0"
+libraryDependencies += "org.json4s" % "json4s-native_2.10" % "3.5.1"
