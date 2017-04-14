@@ -11,7 +11,7 @@ object HelloStreaming {
 
     val conf = new SparkConf().setAppName("streaming").setMaster("local[*]")
     val sc = new SparkContext(conf)
-    val ssc = new StreamingContext(sc, Seconds(5))
+    val ssc = new StreamingContext(sc, Seconds(20))
 
     ssc.checkpoint("/home/nozes/labs/checkpoint")
 
@@ -33,7 +33,7 @@ object HelloStreaming {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-    val value = stream.map(record => (record.value(), 1L))
+    val value = stream.map[(String, (String, Long))](record => (record.value(), (record.value(), 1L)))
     val updated = value.updateStateByKey(updateRunningSum)
     updated.print()
 
@@ -43,8 +43,20 @@ object HelloStreaming {
     ssc.awaitTermination()
   }
 
-  def updateRunningSum(values: Seq[Long], state: Option[Long]) = {
-    Some(state.getOrElse(0L) + values.size)
+  // noob: state evidentemente eh o estado. são as coisas antigas.
+  // values: são os dados que chegaram agora.
+  // o que devo notar. se está no state, então sempre vai chegar nessa função,
+  // mesmo que nao tenha chegado dado nenhum agora.
+  // o que devo fazer, no caso de nao quer mais um state, eh retornar um none. entao,
+  // minha variavel vai sair do none.
+  def updateRunningSum(values: Seq[(String, Long)], state: Option[(String, Long)]) = {
+    // pega o string (que eh o nome) do state. se o state for vazio, pega o primeiro nome da seq.
+    // espero que isso nunca resulte num npe.
+    val theString = state.getOrElse((values.head._1, 0L))._1
+
+    val count = state.getOrElse(("a", 0L))._2 + values.size
+
+    if (count > 4) None else Some((theString, count))
   }
 
 }
