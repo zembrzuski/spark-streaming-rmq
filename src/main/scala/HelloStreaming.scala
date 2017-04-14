@@ -25,7 +25,6 @@ object HelloStreaming {
       //"enable.auto.commit" -> (false: java.lang.Boolean)
     )
 
-
     val topics = Array("test")
 
     val stream = KafkaUtils.createDirectStream[String, String](
@@ -34,10 +33,11 @@ object HelloStreaming {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-    //stream.count().print()
     val value = stream.map(record => (record.value(), 1L))
-    val updated = value.updateStateByKey(updateRunningSum _)
+    val updated = value.updateStateByKey(updateRunningSum)
     updated.print()
+
+
 
     ssc.start()
     ssc.awaitTermination()
