@@ -5,6 +5,14 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 
+
+/**
+  * TIVE UM INSIGHT:
+  * SE A GENTE VIR UM CARA QUE ESTÁ MANDANDO VARIAS REQUISICOES, ISTO EH, UM
+  * NUMERO MUITO MAIOR DO QUE A MEDIA EM GERAL, ESSE CARA ESTÁ ATACANDO A RBS.
+  * ENTAO, POSSO BLOQUEA-LO.
+  */
+
 object HelloStreaming {
 
   def main(args: Array[String]): Unit = {
@@ -33,30 +41,46 @@ object HelloStreaming {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-    val value = stream.map[(String, (String, Long))](record => (record.value(), (record.value(), 1L)))
-    val updated = value.updateStateByKey(updateRunningSum)
-    updated.print()
+//    val value = stream.map[(String, (String, Long))](record => (record.value(), (record.value(), 1L)))
+//    val updated = value.updateStateByKey(updateRunningSum)
+//    updated.print()
 
+
+    stream
+      .map[((String, Integer), Long)](record => {
+        // minha chave eh a tupla (secao, hora) , e depois tem o counter.
+        val splitted = record.value().split(" ")
+        val secao = splitted(0)
+        val hora = splitted(1).toInt
+
+        ((secao, hora), 1L)
+      })
+      .reduceByKey((count1, count2) => count1 + count2)
+      .map[(String, (Integer, Long))](x => {
+        // minha tupla aqui eh (secao, (hora, count))
+        (x._1._1, (x._1._2, x._2))
+      })
+      .groupByKey() // it would be better if I had implemented it using reduceByKey.
+      .updateStateByKey(updateFunc)
+      .print()
 
 
     ssc.start()
     ssc.awaitTermination()
   }
 
-  // noob: state evidentemente eh o estado. são as coisas antigas.
-  // values: são os dados que chegaram agora.
-  // o que devo notar. se está no state, então sempre vai chegar nessa função,
-  // mesmo que nao tenha chegado dado nenhum agora.
-  // o que devo fazer, no caso de nao quer mais um state, eh retornar um none. entao,
-  // minha variavel vai sair do none.
-  def updateRunningSum(values: Seq[(String, Long)], state: Option[(String, Long)]) = {
-    // pega o string (que eh o nome) do state. se o state for vazio, pega o primeiro nome da seq.
-    // espero que isso nunca resulte num npe.
-    val theString = state.getOrElse((values.head._1, 0L))._1
-
-    val count = state.getOrElse(("a", 0L))._2 + values.size
-
-    if (count > 4) None else Some((theString, count))
+  def updateFunc(values: Seq[Iterable[(Integer, Long)]], state: Option[(Int, Long)]): Option[(Int, Long)] = {
+    values.head.reduce[Option[(Int, Long)]]((v1, v2) => {
+      v1.
+      //Some((v1._1, v1._2))// if (v1._1 > v2._1) else (v2._1, v2._2)
+      None
+    })
   }
+
+//  def updateRunningSum(values: Seq[(String, Long)], state: Option[(String, Long)]) = {
+//    val theString = state.getOrElse((values.head._1, 0L))._1
+//    val count = state.getOrElse(("a", 0L))._2 + values.size
+//    if (count > 4) None else Some((theString, count))
+//  }
 
 }
