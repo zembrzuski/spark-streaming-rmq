@@ -46,7 +46,7 @@ object HelloStreaming {
 //    updated.print()
 
 
-    stream
+    val latestSessionInfo = stream
       .map[((String, Integer), Long)](record => {
         // minha chave eh a tupla (secao, hora) , e depois tem o counter.
         val splitted = record.value().split(" ")
@@ -56,12 +56,18 @@ object HelloStreaming {
         ((secao, hora), 1L)
       })
       .reduceByKey((count1, count2) => count1 + count2)
-      .map[(String, (Integer, Long))](x => {
-        // minha tupla aqui eh (secao, (hora, count))
-        (x._1._1, (x._1._2, x._2))
-      })
-      .groupByKey() // it would be better if I had implemented it using reduceByKey.
+      .map[((String, Int), Long)](tup => ((tup._1._1, tup._1._2), tup._2))
       .updateStateByKey(updateFunc)
+
+    latestSessionInfo
+      .print()
+
+    latestSessionInfo
+      .map[(String, (Int, Long))](x => (x._1._1, (x._1._2, x._2)))
+      .reduceByKey((a: (Int, Long), b: (Int, Long)) => {
+        if (a._1 > b._1) a else b
+      })
+      .updateStateByKey(updateAgain)
       .print()
 
 
@@ -69,12 +75,12 @@ object HelloStreaming {
     ssc.awaitTermination()
   }
 
-  def updateFunc(values: Seq[Iterable[(Integer, Long)]], state: Option[(Int, Long)]): Option[(Int, Long)] = {
-    values.head.reduce[Option[(Int, Long)]]((v1, v2) => {
-      v1.
-      //Some((v1._1, v1._2))// if (v1._1 > v2._1) else (v2._1, v2._2)
-      None
-    })
+  def updateAgain(values: Seq[(Int, Long)], state: Option[(Int, Long)]): Option[(Int, Long)] = {
+    None
+  }
+
+  def updateFunc(values: Seq[Long], state: Option[Long]): Option[Long] = {
+    Some(state.getOrElse(0L) + values.headOption.getOrElse(0L))
   }
 
 //  def updateRunningSum(values: Seq[(String, Long)], state: Option[(String, Long)]) = {
