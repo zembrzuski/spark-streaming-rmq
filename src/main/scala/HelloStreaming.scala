@@ -47,43 +47,74 @@ object HelloStreaming {
 
 
     val latestSessionInfo = stream
-      .map[((String, Integer), Long)](record => {
+      .map[((String, Integer), (String, Long))](record => {
         // minha chave eh a tupla (secao, hora) , e depois tem o counter.
         val splitted = record.value().split(" ")
         val secao = splitted(0)
         val hora = splitted(1).toInt
 
-        ((secao, hora), 1L)
+        ((secao, hora), (secao, 1L))
       })
-      .reduceByKey((count1, count2) => count1 + count2)
-      .map[((String, Int), Long)](tup => ((tup._1._1, tup._1._2), tup._2))
+      .reduceByKey((t1: (String, Long), t2: (String, Long)) => (t1._1, t1._2 + t2._2))
+      .map(x => {
+        println(x._1) // imprime a chave
+        x
+      })
       .updateStateByKey(updateFunc)
 
     latestSessionInfo
-      .print()
+      .print() // I should send it to redis or mongo instead of call print function.
 
     latestSessionInfo
-      .map[(String, (Int, Long))](x => (x._1._1, (x._1._2, x._2)))
-      .reduceByKey((a: (Int, Long), b: (Int, Long)) => {
-        if (a._1 > b._1) a else b
+      .map[(String, (String, Int, Long))](x => {
+        //(secao, (secao, hora, counter)
+        (x._1._1, (x._2._1, x._1._2, x._2._2))
       })
-      .updateStateByKey(updateAgain)
+      .reduceByKey((a, b) => {
+        if (a._2 > b._2) a else b
+      })
+      .map(tup => ((tup._1, tup._2._2), (tup._2._1, tup._2._3)))
+      .map(x => {
+        println(x._1) // imprime a chave
+        x
+      })
+      .updateStateByKey(updateFuncSecondPhase)
       .print()
+
+//    latestSessionInfo
+//      .map[(String, (Int, Long))](x => (x._1._1, (x._1._2, x._2)))
+//      .reduceByKey((a: (Int, Long), b: (Int, Long)) => {
+//        if (a._1 > b._1) a else b
+//      })
+//      .map[((String, Int), Long)](tup => ((tup._1, tup._2._1), tup._2._2))
+//      .updateStateByKey(updateFuncSecondPhase)
+//      .print()
 
 
     ssc.start()
     ssc.awaitTermination()
   }
 
-  def updateAgain(values: Seq[(Int, Long)], state: Option[(Int, Long)]): Option[(Int, Long)] = {
-    None
+  def updateFunc(values: Seq[(String, Long)], state: Option[(String, Long)]): Option[(String, Long)] = {
+    val secao = state.getOrElse((values.head._1, 0L))._1
+    val soma = state.getOrElse(("x", 0L))._2 + values.headOption.getOrElse(("x", 0L))._2
+    Some(secao, soma)
   }
 
-  def updateFunc(values: Seq[Long], state: Option[Long]): Option[Long] = {
-    Some(state.getOrElse(0L) + values.headOption.getOrElse(0L))
+
+  def updateFuncSecondPhase(values: Seq[(String, Long)], state: Option[(String, Long)]): Option[(String, Long)] = {
+    val secao = state.getOrElse((values.head._1, 0L))._1
+    val soma = state.getOrElse(("x", 0L))._2 + values.headOption.getOrElse(("x", 0L))._2
+    Some(secao, soma)
   }
 
-//  def updateRunningSum(values: Seq[(String, Long)], state: Option[(String, Long)]) = {
+
+  //  def updateFuncSecondPhase(values: Seq[Long], state: Option[Long]): Option[Long] = {
+//    Some(state.getOrElse(0L) + values.headOption.getOrElse(0L))
+//  }
+
+
+  //  def updateRunningSum(values: Seq[(String, Long)], state: Option[(String, Long)]) = {
 //    val theString = state.getOrElse((values.head._1, 0L))._1
 //    val count = state.getOrElse(("a", 0L))._2 + values.size
 //    if (count > 4) None else Some((theString, count))
