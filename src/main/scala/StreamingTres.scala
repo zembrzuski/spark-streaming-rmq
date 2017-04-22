@@ -64,8 +64,5 @@ object StreamingTres {
   }
 
 
-  def xoxo(v1: Int, v2: Int): Option[Long] = {
-    None
-  }
 
 }
