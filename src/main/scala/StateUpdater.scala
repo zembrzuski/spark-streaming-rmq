@@ -1,3 +1,5 @@
+import java.util.stream.Collectors
+
 /**
   * Created by nozes on 4/22/17.
   */
@@ -7,18 +9,42 @@ object StateUpdater {
     Some(v1 + v2)
   }
 
-  def updateFunc(values: Seq[Iterable[(Int, Long)]],
-                 state: Option[Iterable[(Int, Long)]]
-                ): Option[Iterable[(Int, Long)]] = {
+  def updateFunc(values: Seq[Iterable[(Int, Long)]], state: Option[Iterable[(Int, Long)]]): Option[Iterable[(Int, Long)]] = {
 
-    // TODO prever o caso em que nao tem um value.
-    // TODO prever o caso em que os values nao devam ou devam remover o state.
-    // example: se nao tem value e o state estah duas horas defasado, removo ele.
+    if (state.isEmpty) {
+      val theValues: Iterable[(Int, Long)] = values.head
+      return Some(List((theValues.head._1, theValues.head._2)))
+    }
 
-    val theValues: Iterable[(Int, Long)] = values.head
-    val theState: Iterable[(Int, Long)] = state.head
+    if (values.isEmpty) {
+      return state
+    }
 
-    None
+    val summed = values.head.map(x => {
+      val hour = x._1
+      val count = x._2
+
+      val collectedFromState = state.get.collectFirst({
+        case i if (i._1.equals(hour)) => i
+      })
+
+      (hour, count+collectedFromState.getOrElse((0, 0L))._2)
+    })
+
+
+    val ordered = summed.toStream.sortBy(x => x._1)
+
+
+    val previousHours: Iterable[Int] = values.head.map(x => x._1)
+
+    val filtered = ordered.filter(x => {
+      val got = previousHours.collectFirst({
+        case i if (i.equals(x._1)) => 1
+      })
+      got.isDefined
+    }).toList
+
+    return Some(filtered)
   }
 
 }
