@@ -1,8 +1,5 @@
 import org.scalatest.FlatSpec
 
-/**
-  * Created by nozes on 4/22/17.
-  */
 class MyTest extends FlatSpec {
 
   /**
@@ -131,7 +128,6 @@ class MyTest extends FlatSpec {
 
     assert(newState.get.toList(1)._1 === 15)
     assert(newState.get.toList(1)._2 === 7)
-
   }
 
 }
