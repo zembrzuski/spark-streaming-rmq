@@ -1,9 +1,10 @@
+import com.redis._
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.KafkaUtils
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.{SparkConf, SparkContext}
 
 object StreamingTres {
 
@@ -44,7 +45,24 @@ object StreamingTres {
       })
       .groupByKey()
       .updateStateByKey(StateUpdater.updateFunc)
-      .print()
+      //.print()
+
+
+    myStream
+      .flatMap(x => {
+        val section = x._1
+        x._2.map(xoxo => {
+          (x._1 + "---" + xoxo._1, xoxo._2.toString)
+        })
+      })
+      .foreachRDD(rdd => {
+        rdd.foreachPartition(partition => {
+          val r = new RedisClient("localhost", 6379)
+          partition.foreach(item => {
+            r.set(item._1, item._2)
+          })
+        })
+      })
 
     ssc.start()
     ssc.awaitTermination()

@@ -13,3 +13,8 @@ libraryDependencies += "org.json4s" % "json4s-native_2.10" % "3.5.1"
 
 // https://mvnrepository.com/artifact/RedisLabs/spark-redis
 //libraryDependencies += "RedisLabs" % "spark-redis" % "0.1.1"
+
+//libraryDependencies += "net.debasishg" % "redisclient" % "3.4"
+
+// https://mvnrepository.com/artifact/net.debasishg/redisclient_2.10
+libraryDependencies += "net.debasishg" % "redisclient_2.10" % "3.0"
