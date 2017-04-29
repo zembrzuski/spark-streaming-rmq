@@ -10,3 +10,6 @@ libraryDependencies += "org.apache.spark" % "spark-streaming_2.10" % "2.1.0"
 
 libraryDependencies += "org.apache.spark" % "spark-streaming-kafka-0-10_2.10" % "2.0.0"
 libraryDependencies += "org.json4s" % "json4s-native_2.10" % "3.5.1"
+
+// https://mvnrepository.com/artifact/RedisLabs/spark-redis
+//libraryDependencies += "RedisLabs" % "spark-redis" % "0.1.1"
