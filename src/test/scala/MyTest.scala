@@ -31,6 +31,22 @@ class MyTest extends FlatSpec {
     assert(newState.head.head._2 === 2)
   }
 
+  // quando existe value e nao tem state, e a hora eh a mesma nos dois.
+  // eh bem facil. eh so manter o que ja tem.
+  "t22" should "sum values in the most simple case " in {
+    val values: Seq[Iterable[(Int, Long)]] = List(List((14, 2), (15, 13)))
+    val state: Option[Iterable[(Int, Long)]] = None
+
+    val newState: Option[Iterable[(Int, Long)]] = StateUpdater.updateFunc(values, state)
+
+    assert(newState.head.head._1 === 14)
+    assert(newState.head.head._2 === 2)
+
+    assert(newState.head.toList(1)._1 === 15)
+    assert(newState.head.toList(1)._2 === 13)
+  }
+
+
   // quando nao existe value e existe state, e a hora eh a mesma nos dois.
   // eh bem facil. eh so manter o que ja tem.
   "t3" should "sum values in the most simple case " in {

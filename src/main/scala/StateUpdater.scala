@@ -6,7 +6,7 @@ object StateUpdater {
 
     if (state.isEmpty) {
       val theValues: Iterable[(Int, Long)] = values.head
-      return Some(List((theValues.head._1, theValues.head._2)))
+      return Some(theValues)
     }
 
     if (values.isEmpty) {

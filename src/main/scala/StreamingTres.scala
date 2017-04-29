@@ -31,7 +31,7 @@ object StreamingTres {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-    val naosei = stream
+    val myStream = stream
       .map[((String, Int), Long)](record => {
         val splitted = record.value().split(" ")
         // key: (secao, hora)
@@ -43,26 +43,12 @@ object StreamingTres {
         (x._1._1, (x._1._2, x._2))
       })
       .groupByKey()
-      .updateStateByKey(updateFunc)
+      .updateStateByKey(StateUpdater.updateFunc)
+      .print()
 
     ssc.start()
     ssc.awaitTermination()
+
   }
-
-  def updateFunc(values: Seq[Iterable[(Int, Long)]],
-                 state: Option[Iterable[(Int, Long)]]
-                ): Option[Iterable[(Int, Long)]] = {
-
-    // TODO prever o caso em que nao tem um value.
-    // TODO prever o caso em que os values nao devam ou devam remover o state.
-    // example: se nao tem value e o state estah duas horas defasado, removo ele.
-
-    val theValues: Iterable[(Int, Long)] = values.head
-    val theState: Iterable[(Int, Long)] = state.head
-
-    None
-  }
-
-
 
 }
