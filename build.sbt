@@ -18,3 +18,6 @@ libraryDependencies += "org.json4s" % "json4s-native_2.10" % "3.5.1"
 
 // https://mvnrepository.com/artifact/net.debasishg/redisclient_2.10
 libraryDependencies += "net.debasishg" % "redisclient_2.10" % "3.0"
+
+// https://mvnrepository.com/artifact/com.google.code.gson/gson
+libraryDependencies += "com.google.code.gson" % "gson" % "2.8.0"
