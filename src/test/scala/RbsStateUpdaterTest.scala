@@ -1,3 +1,4 @@
+import legacy.RbsStateUpdater
 import org.scalatest.FlatSpec
 
 class RbsStateUpdaterTest extends FlatSpec {

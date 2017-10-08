@@ -1,3 +1,5 @@
+package legacy
+
 import com.redis._
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe

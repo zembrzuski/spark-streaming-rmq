@@ -1,3 +1,5 @@
+package legacy
+
 import com.google.gson.Gson
 
 object StreamingJson {

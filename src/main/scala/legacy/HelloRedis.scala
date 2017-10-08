@@ -1,3 +1,5 @@
+package legacy
+
 //import com.redislabs.provider.redis._
 //import org.apache.spark.{SparkConf, SparkContext}
 

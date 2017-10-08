@@ -1,3 +1,4 @@
+import legacy.StateUpdater
 import org.scalatest.FlatSpec
 
 class MyTest extends FlatSpec {
